@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "n8nleaks"
+dynamic = ["version"]
+description = "Find secrets and personal data in exported n8n workflows before they reach git."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+authors = [{ name = "WAS4BI" }]
+keywords = ["n8n", "secrets", "secret-scanning", "pre-commit", "security", "workflows"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Security",
+    "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/WAS4BI/n8nleaks"
+Issues = "https://github.com/WAS4BI/n8nleaks/issues"
+
+[project.scripts]
+n8nleaks = "n8nleaks.cli:main"
+
+[tool.hatch.version]
+path = "src/n8nleaks/__init__.py"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

@@ -1,0 +1,49 @@
+name: n8nleaks
+description: Find secrets and personal data in exported n8n workflows.
+branding:
+  icon: shield
+  color: red
+
+inputs:
+  paths:
+    description: Files or folders to scan, one per line.
+    default: "."
+  fail-on:
+    description: Lowest severity that fails the step, error or warning.
+    default: error
+  format:
+    description: github (annotations on the pull request), text or json.
+    default: github
+  python-version:
+    description: Python used to run n8nleaks. It does not change the Python your other steps see.
+    default: "3.13"
+
+runs:
+  using: composite
+  steps:
+    - id: python
+      uses: actions/setup-python@v7
+      with:
+        python-version: ${{ inputs.python-version }}
+        update-environment: false
+
+    - name: Install n8nleaks
+      shell: bash
+      env:
+        PYTHON: ${{ steps.python.outputs.python-path }}
+      run: '"$PYTHON" -m pip install --quiet --disable-pip-version-check "$GITHUB_ACTION_PATH"'
+
+    - name: Scan
+      shell: bash
+      env:
+        PYTHON: ${{ steps.python.outputs.python-path }}
+        PATHS: ${{ inputs.paths }}
+        FAIL_ON: ${{ inputs.fail-on }}
+        FORMAT: ${{ inputs.format }}
+      run: |
+        # One path per line, so file names with spaces work.
+        paths=()
+        while IFS= read -r p; do
+          [ -n "$p" ] && paths+=("$p")
+        done <<< "$PATHS"
+        "$PYTHON" -m n8nleaks --format "$FORMAT" --fail-on "$FAIL_ON" "${paths[@]}"

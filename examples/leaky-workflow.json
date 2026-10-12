@@ -1,0 +1,116 @@
+{
+  "name": "Sync Orders",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "orders",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "id": "1b6c2f1e-0a4d-4c55-9a51-6f0f6d3a8a01",
+      "name": "New Order",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "5f3c7a9e-2d41-4b8e-a0c6-91d2e7f4b3a2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://erp.example.com/api/login",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"username\": \"integration\",\n  \"password\": \"Winter2026!\"\n}",
+        "options": {}
+      },
+      "id": "2c7d3a2f-1b5e-4d66-8b62-7a1a7e4b9b02",
+      "name": "Log In to ERP",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "url": "=https://crm.example.com/api/customers/{{ $json.body.customerId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 9f8e7d6c5b4a39281706f5e4d3c2b1a0"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3d8e4b30-2c6f-4e77-9c73-8b2b8f5cac03",
+      "name": "Get Customer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Sign the upload request for the storage bucket\nconst accessKeyId = \"AKIAIOSFODNN7EXAMPLE\";\nconst region = \"us-east-1\";\n\nreturn $input.all().map(item => ({\n  json: { ...item.json, accessKeyId, region }\n}));"
+      },
+      "id": "4e9f5c41-3d70-4f88-ad84-9c3c9a6dbd04",
+      "name": "Sign Upload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "fromEmail": "orders@example.com",
+        "toEmail": "jane.doe@acme.test",
+        "subject": "=Order {{ $('New Order').item.json.body.orderId }} synced",
+        "options": {}
+      },
+      "id": "5fa06d52-4e81-4099-be95-ad4dab7ece05",
+      "name": "Tell Sales",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [880, 0]
+    }
+  ],
+  "pinData": {
+    "New Order": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.example.com",
+            "content-type": "application/json",
+            "authorization": "eyJ1c2VyIjogImphbmUuZG9lQGFjbWUudGVzdCJ9"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "orderId": "SO-1042",
+            "customerId": "C-77",
+            "contactEmail": "maria.lopez@acme.test"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "New Order": {
+      "main": [[{ "node": "Log In to ERP", "type": "main", "index": 0 }]]
+    },
+    "Log In to ERP": {
+      "main": [[{ "node": "Get Customer", "type": "main", "index": 0 }]]
+    },
+    "Get Customer": {
+      "main": [[{ "node": "Sign Upload", "type": "main", "index": 0 }]]
+    },
+    "Sign Upload": {
+      "main": [[{ "node": "Tell Sales", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

@@ -1,0 +1,6 @@
+- id: n8nleaks
+  name: n8nleaks
+  description: Find secrets and personal data in exported n8n workflows.
+  entry: n8nleaks
+  language: python
+  types: [json]
